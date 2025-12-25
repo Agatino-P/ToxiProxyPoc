@@ -9,7 +9,7 @@ public sealed class NginxToxiFixture : IAsyncLifetime
 {
     public ProxyEndpoint NginxProxy { get; private set; } = null!;
 
-    private const string NginxAlias = "nginx";
+    private const string _nginxAlias = "nginx";
 
     private readonly INetwork _network = new NetworkBuilder().Build();
     private readonly IContainer _nginx;
@@ -21,7 +21,7 @@ public sealed class NginxToxiFixture : IAsyncLifetime
         _nginx = new ContainerBuilder()
             .WithImage("nginx:alpine")
             .WithNetwork(_network)
-            .WithNetworkAliases(NginxAlias)
+            .WithNetworkAliases(_nginxAlias)
             .Build();
 
         Toxi = new ToxiProxyContainer(
@@ -35,18 +35,15 @@ public sealed class NginxToxiFixture : IAsyncLifetime
         await _nginx.StartAsync();
         await Toxi.StartAsync();
 
-        // Create proxy ONCE per fixture
         NginxProxy = await Toxi.CreateProxyAsync(
             name: "nginx-proxy",
-            upstreamHostAndPort: $"{NginxAlias}:80");
-
-        // Start in a known-clean state
-        await Toxi.RestoreAllAsync();
+            proxiedHost:_nginxAlias,
+            proxiedPort: 80
+            );
     }
 
     public async Task DisposeAsync()
     {
-        // Best effort cleanup: reset before shutting down
         try { await Toxi.RestoreAllAsync(); } catch { /* ignore */ }
 
         await Toxi.DisposeAsync();

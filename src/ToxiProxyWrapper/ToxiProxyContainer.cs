@@ -32,7 +32,6 @@ public sealed class ToxiProxyContainer : IAsyncDisposable
     {
         await _container.StartAsync(ct);
 
-        // Initialize control client as part of StartAsync (one step, like specialized containers).
         _connection = new Connection(_container.Hostname, _container.GetMappedPublicPort());
         _client = _connection.Client();
     }
@@ -42,7 +41,8 @@ public sealed class ToxiProxyContainer : IAsyncDisposable
 
     public async Task<ProxyEndpoint> CreateProxyAsync(
         string name,
-        string upstreamHostAndPort, // e.g. "nginx:80"
+        string proxiedHost,
+        int proxiedPort,
         ushort? listenPortInContainer = null, // optional; otherwise auto-assigned
         CancellationToken cancellationToken = default)
     {
@@ -50,7 +50,7 @@ public sealed class ToxiProxyContainer : IAsyncDisposable
 
         await _client.AddAsync(new Proxy
         {
-            Name = name, Enabled = true, Listen = $"0.0.0.0:{listenPort}", Upstream = upstreamHostAndPort
+            Name = name, Enabled = true, Listen = $"0.0.0.0:{listenPort}", Upstream = $"{proxiedHost}:{proxiedPort}"
         });
 
         return new ProxyEndpoint(
