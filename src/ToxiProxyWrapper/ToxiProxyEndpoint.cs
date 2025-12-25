@@ -2,22 +2,24 @@
 
 namespace ToxiProxyWrapper;
 
-public sealed class ProxyEndpoint
+public sealed class ToxiProxyEndpoint
 {
-    public string Name { get; }
-    public string Host { get; }
-    public int Port { get; }
-
+    public string Name { get; private set; }
+    public string MappedHost { get; private set; }
+    public int DockerPort { get; private set; }
+    public int MappedPort { get; private set; }
+    
     private readonly Func<Task> _disable;
     private readonly Func<Task> _enable;
     private readonly Func<string, int, int, ToxicDirection, Task> _addLatency;
     private readonly Func<string, int, ToxicDirection, Task> _addTimeout;
     private readonly Func<string, Task> _removeToxic;
 
-    internal ProxyEndpoint(
+    internal ToxiProxyEndpoint(
         string name,
-        string host,
-        int port,
+        int dockerPort,
+        string mappedHost,
+        int mappedPort,
         Func<Task> disable,
         Func<Task> enable,
         Func<string, int, int, ToxicDirection, Task> addLatency,
@@ -25,8 +27,9 @@ public sealed class ProxyEndpoint
         Func<string, Task> removeToxic)
     {
         Name = name;
-        Host = host;
-        Port = port;
+        MappedHost = mappedHost;
+        DockerPort = dockerPort;
+        MappedPort = mappedPort;
         _disable = disable;
         _enable = enable;
         _addLatency = addLatency;

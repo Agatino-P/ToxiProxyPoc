@@ -13,7 +13,7 @@ public sealed class NginxToxiTests : IClassFixture<NginxToxiFixture>, IAsyncLife
     public NginxToxiTests(NginxToxiFixture fx)
     {
         _fx = fx;
-        _toxiProxyUri = new Uri($"http://{_fx.NginxProxy.Host}:{_fx.NginxProxy.Port}/");
+        _toxiProxyUri = new Uri($"http://{_fx.NginxToxiProxy.MappedHost}:{_fx.NginxToxiProxy.MappedPort}/");
     }
 
     public Task InitializeAsync() => _fx.Toxi.RestoreAllAsync();
@@ -33,7 +33,7 @@ public sealed class NginxToxiTests : IClassFixture<NginxToxiFixture>, IAsyncLife
     [Fact]
     public async Task Latency_can_be_injected()
     {
-        await _fx.NginxProxy.AddLatencyAsync(latencyMs: 800, jitterMs: 100);
+        await _fx.NginxToxiProxy.AddLatencyAsync(latencyMs: 800, jitterMs: 100);
 
         using HttpClient http = createHttpClient();
 
@@ -47,7 +47,7 @@ public sealed class NginxToxiTests : IClassFixture<NginxToxiFixture>, IAsyncLife
     [Fact]
     public async Task Disabling_proxy_breaks_connectivity()
     {
-        await _fx.NginxProxy.DisableAsync();
+        await _fx.NginxToxiProxy.DisableAsync();
 
         using HttpClient httpClient = createHttpClient(TimeSpan.FromSeconds(2));
 
@@ -55,7 +55,7 @@ public sealed class NginxToxiTests : IClassFixture<NginxToxiFixture>, IAsyncLife
 
         await willFail.ShouldThrowAsync<Exception>();
 
-        await _fx.NginxProxy.EnableAsync();
+        await _fx.NginxToxiProxy.EnableAsync();
     }
 
     private HttpClient createHttpClient(TimeSpan? timeout = null)

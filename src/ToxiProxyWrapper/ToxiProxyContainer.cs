@@ -39,7 +39,7 @@ public sealed class ToxiProxyContainer : IAsyncDisposable
     public async Task StopAsync(CancellationToken ct = default)
         => await _container.StopAsync(ct);
 
-    public async Task<ProxyEndpoint> CreateProxyAsync(
+    public async Task<ToxiProxyEndpoint> CreateProxyAsync(
         string name,
         string proxiedHost,
         int proxiedPort,
@@ -53,10 +53,11 @@ public sealed class ToxiProxyContainer : IAsyncDisposable
             Name = name, Enabled = true, Listen = $"0.0.0.0:{listenPort}", Upstream = $"{proxiedHost}:{proxiedPort}"
         });
 
-        return new ProxyEndpoint(
+        return new ToxiProxyEndpoint(
             name: name,
-            host: _container.Hostname,
-            port: _container.GetMappedPublicPort(listenPort),
+            dockerPort: listenPort,
+            mappedHost: _container.Hostname,
+            mappedPort: _container.GetMappedPublicPort(listenPort),
             disable: () => setEnabledAsync(name, enabled: false),
             enable: () => setEnabledAsync(name, enabled: true),
             addLatency: (toxicName, latencyMs, jitterMs, direction) =>

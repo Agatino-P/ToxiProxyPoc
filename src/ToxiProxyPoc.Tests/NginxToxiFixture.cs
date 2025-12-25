@@ -7,7 +7,7 @@ namespace ToxiProxyPoc.Tests;
 
 public sealed class NginxToxiFixture : IAsyncLifetime
 {
-    public ProxyEndpoint NginxProxy { get; private set; } = null!;
+    public ToxiProxyEndpoint NginxToxiProxy { get; private set; } = null!;
 
     private const string _nginxAlias = "nginx";
 
@@ -35,7 +35,7 @@ public sealed class NginxToxiFixture : IAsyncLifetime
         await _nginx.StartAsync();
         await Toxi.StartAsync();
 
-        NginxProxy = await Toxi.CreateProxyAsync(
+        NginxToxiProxy = await Toxi.CreateProxyAsync(
             name: "nginx-proxy",
             proxiedHost:_nginxAlias,
             proxiedPort: 80
